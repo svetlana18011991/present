@@ -32,6 +32,22 @@ function slideHtml(slide, index, presentation, theme) {
       </section>`;
   }
 
+
+  if (slide.type === "math") {
+    return `
+      <section class="slide" data-slide="${index}" style="${bgStyle}">
+        <div class="accent"></div>
+        <div class="math-slide">
+          <h2>${escapeHtml(slide.title || "Задача")}</h2>
+          ${slide.image ? `<img class="math-task-image" src="${slide.image}" alt="Задача">` : ""}
+          <div class="formula-box"><span class="latex">${escapeHtml(slide.latex || slide.text || "")}</span></div>
+          ${slide.solution ? `<div class="solution"><strong>Решение / подсказка:</strong><br>${escapeHtml(slide.solution).replaceAll("\\n", "<br>")}</div>` : ""}
+          ${slide.answer ? `<div class="answer"><strong>Ответ:</strong> ${escapeHtml(slide.answer)}</div>` : ""}
+        </div>
+        <div class="counter">${index + 1} / ${presentation.slides.length}</div>
+      </section>`;
+  }
+
   if (slide.type === "quote") {
     return `
       <section class="slide" data-slide="${index}" style="${bgStyle}">
@@ -73,6 +89,8 @@ export function createGeniallyHtml(presentation) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(presentation.title || "Презентация")}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -151,6 +169,40 @@ export function createGeniallyHtml(presentation) {
     max-height: 52vh;
     object-fit: contain;
     border-radius: 24px;
+  }
+  .math-slide h2 {
+    font-size: clamp(28px, 4vw, 58px);
+    line-height: 1.1;
+    margin-bottom: 18px;
+  }
+  .math-task-image {
+    display: block;
+    max-width: 40%;
+    max-height: 30vh;
+    object-fit: contain;
+    border-radius: 18px;
+    margin-bottom: 18px;
+  }
+  .formula-box {
+    border-radius: 28px;
+    padding: 30px;
+    background: ${theme.card};
+    font-size: clamp(26px, 4vw, 62px);
+    text-align: center;
+  }
+  .solution {
+    margin-top: 22px;
+    border-radius: 22px;
+    padding: 20px;
+    background: rgba(255,255,255,.78);
+    font-size: clamp(18px, 2vw, 28px);
+    line-height: 1.35;
+  }
+  .answer {
+    margin-top: 14px;
+    font-size: clamp(22px, 2.6vw, 36px);
+    font-weight: 800;
+    color: ${theme.accent};
   }
   .quote-slide {
     height: 100%;
@@ -231,10 +283,124 @@ export function createGeniallyHtml(presentation) {
     if (event.key === "ArrowLeft") prevSlide();
   });
 
+  function renderLatex() {
+    if (!window.katex) return;
+    document.querySelectorAll(".latex").forEach((el) => {
+      const source = el.textContent || "";
+      katex.render(source, el, {
+        throwOnError: false,
+        displayMode: true
+      });
+    });
+  }
+
+  if (document.readyState === "complete") {
+    renderLatex();
+  } else {
+    window.addEventListener("load", renderLatex);
+  }
+
   showSlide(0);
 </script>
 </body>
 </html>`;
+}
+
+export function openGeniallyCodeWindow(presentation) {
+  const html = createGeniallyHtml(presentation);
+  const win = window.open("", "_blank", "width=1000,height=760");
+
+  if (!win) {
+    alert("Браузер заблокировал окно с кодом. Разрешите всплывающие окна или используйте кнопку «Скачать HTML».");
+    return;
+  }
+
+  const safeValue = html
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+  win.document.open();
+  win.document.write(`<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Код для Genially</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+<style>
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #111827;
+  }
+  h1 { margin: 0 0 10px; }
+  p { max-width: 900px; line-height: 1.45; }
+  textarea {
+    width: 100%;
+    height: 520px;
+    padding: 14px;
+    border: 2px solid #2563eb;
+    border-radius: 14px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.35;
+    resize: vertical;
+    background: white;
+  }
+  button {
+    margin: 10px 8px 12px 0;
+    border: 0;
+    border-radius: 12px;
+    padding: 11px 16px;
+    background: #2563eb;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .hint {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff7ed;
+    color: #7c2d12;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<h1>Код для Genially</h1>
+<p class="hint">Нажмите кнопку «Выделить весь код», затем Ctrl+C. После этого вставьте код в Genially через Insert / Embed / Вставить код.</p>
+<button onclick="selectCode()">Выделить весь код</button>
+<button onclick="copyCode()">Скопировать</button>
+<textarea id="code">${safeValue}</textarea>
+<script>
+  function selectCode() {
+    const el = document.getElementById("code");
+    el.focus();
+    el.select();
+  }
+
+  async function copyCode() {
+    const el = document.getElementById("code");
+    el.focus();
+    el.select();
+
+    try {
+      await navigator.clipboard.writeText(el.value);
+      alert("Код скопирован. Теперь вставьте его в Genially.");
+    } catch (e) {
+      document.execCommand("copy");
+      alert("Код выделен. Нажмите Ctrl+C, если вставка в Genially не сработала.");
+    }
+  }
+
+  window.onload = selectCode;
+</script>
+</body>
+</html>`);
+  win.document.close();
 }
 
 export async function copyGeniallyHtml(presentation) {
@@ -242,15 +408,9 @@ export async function copyGeniallyHtml(presentation) {
 
   try {
     await navigator.clipboard.writeText(html);
-    alert("HTML-код для Genially скопирован. В Genially откройте Insert / Embed и вставьте код.");
+    alert("HTML-код скопирован. Если в Genially ничего не вставляется, используйте кнопку «Открыть код» и скопируйте вручную.");
   } catch {
-    const textarea = document.createElement("textarea");
-    textarea.value = html;
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    textarea.remove();
-    alert("HTML-код скопирован. В Genially вставьте его через Embed / Вставить код.");
+    openGeniallyCodeWindow(presentation);
   }
 }
 

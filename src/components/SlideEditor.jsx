@@ -37,6 +37,7 @@ export default function SlideEditor({
         <option value="title">Титульный</option>
         <option value="content">Текстовый</option>
         <option value="quote">Цитата</option>
+        <option value="math">Математика / LaTeX</option>
       </select>
 
       <label className="label">Заголовок</label>
@@ -64,6 +65,40 @@ export default function SlideEditor({
         onChange={(event) => onChange({ ...slide, text: event.target.value })}
         placeholder="Основной текст слайда"
       />
+
+      {slide.type === "math" && (
+        <>
+          <label className="label">LaTeX-формула</label>
+          <textarea
+            className="textarea latexTextarea"
+            value={slide.latex || ""}
+            onChange={(event) =>
+              onChange({ ...slide, latex: event.target.value })
+            }
+            placeholder="Например: \\frac{2x - 5}{3} = 7"
+          />
+
+          <label className="label">Решение</label>
+          <textarea
+            className="textarea"
+            value={slide.solution || ""}
+            onChange={(event) =>
+              onChange({ ...slide, solution: event.target.value })
+            }
+            placeholder="Решение или подсказка"
+          />
+
+          <label className="label">Ответ</label>
+          <input
+            className="input"
+            value={slide.answer || ""}
+            onChange={(event) =>
+              onChange({ ...slide, answer: event.target.value })
+            }
+            placeholder="Например: x = 13"
+          />
+        </>
+      )}
 
       <div className="editorUploads">
         <label className="uploadControl compact">

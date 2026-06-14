@@ -4,8 +4,10 @@ export default function Toolbar({
   presentation,
   setPresentation,
   addSlide,
+  openMathScan,
   exportPptx,
   copyGenially,
+  openGeniallyCode,
   downloadGenially,
   setFileAsDataUrl,
   resetProject
@@ -82,8 +84,14 @@ export default function Toolbar({
         <button className="button secondary" onClick={addSlide}>
           + Слайд
         </button>
+        <button className="button secondary specialButton" onClick={openMathScan}>
+          Скан задачи
+        </button>
+        <button className="button secondary" onClick={openGeniallyCode}>
+          Открыть код
+        </button>
         <button className="button secondary" onClick={copyGenially}>
-          Код для Genially
+          Скопировать код
         </button>
         <button className="button secondary" onClick={downloadGenially}>
           Скачать HTML

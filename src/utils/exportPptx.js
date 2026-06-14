@@ -170,6 +170,93 @@ export async function exportToPptx(presentation) {
         addSlideImage(slide, item);
       }
 
+
+      if (item.type === "math") {
+        slide.addText(item.title || "Задача", {
+          x: 0.75,
+          y: 0.55,
+          w: 11.7,
+          h: 0.55,
+          fontSize: 28,
+          bold: true,
+          color: hexWithoutHash(theme.text),
+          margin: 0.04,
+          breakLine: false,
+          fit: "shrink"
+        });
+
+        if (item.image) {
+          slide.addImage({
+            data: item.image,
+            x: 0.9,
+            y: 1.35,
+            w: 4.6,
+            h: 2.6,
+            sizing: { type: "contain", x: 0.9, y: 1.35, w: 4.6, h: 2.6 }
+          });
+        }
+
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: item.image ? 5.8 : 1.1,
+          y: 1.35,
+          w: item.image ? 6.6 : 11.1,
+          h: 1.35,
+          rectRadius: 0.12,
+          fill: { color: hexWithoutHash(theme.card), transparency: 0 },
+          line: { color: hexWithoutHash(theme.card), transparency: 100 }
+        });
+
+        slide.addText(item.latex || item.text || "", {
+          x: item.image ? 6.1 : 1.45,
+          y: 1.65,
+          w: item.image ? 6.0 : 10.4,
+          h: 0.7,
+          fontSize: 24,
+          color: hexWithoutHash(theme.text),
+          bold: true,
+          fit: "shrink",
+          breakLine: false,
+          margin: 0.04
+        });
+
+        if (item.solution) {
+          slide.addText("Решение / подсказка:", {
+            x: 0.9,
+            y: 4.15,
+            w: 11.4,
+            h: 0.35,
+            fontSize: 16,
+            bold: true,
+            color: hexWithoutHash(theme.accent),
+            breakLine: false
+          });
+
+          slide.addText(item.solution, {
+            x: 0.9,
+            y: 4.55,
+            w: 11.4,
+            h: 1.0,
+            fontSize: 16,
+            color: hexWithoutHash(theme.text),
+            fit: "shrink",
+            breakLine: false
+          });
+        }
+
+        if (item.answer) {
+          slide.addText(`Ответ: ${item.answer}`, {
+            x: 0.9,
+            y: 5.8,
+            w: 11.4,
+            h: 0.45,
+            fontSize: 20,
+            bold: true,
+            color: hexWithoutHash(theme.accent),
+            breakLine: false
+          });
+        }
+      }
+
       if (item.type === "quote") {
         slide.addText("“", {
           x: 0.75,

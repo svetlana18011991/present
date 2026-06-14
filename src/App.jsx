@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import Toolbar from "./components/Toolbar";
 import SlideEditor from "./components/SlideEditor";
 import SlidePreview from "./components/SlidePreview";
+import MathScanPanel from "./components/MathScanPanel";
 import { defaultPresentation } from "./data/templates";
 import { exportToPptx } from "./utils/exportPptx";
-import { copyGeniallyHtml, downloadGeniallyHtml } from "./utils/exportHtml";
+import { copyGeniallyHtml, downloadGeniallyHtml, openGeniallyCodeWindow } from "./utils/exportHtml";
 
 const STORAGE_KEY = "presentation-builder-project-v2";
 
@@ -15,7 +16,10 @@ function createEmptySlide() {
     subtitle: "",
     text: "Добавьте текст слайда.",
     image: "",
-    backgroundImage: ""
+    backgroundImage: "",
+    latex: "",
+    solution: "",
+    answer: ""
   };
 }
 
@@ -29,6 +33,9 @@ function normalizeProject(project) {
           backgroundImage: "",
           subtitle: "",
           text: "",
+          latex: "",
+          solution: "",
+          answer: "",
           ...slide
         }))
       : defaultPresentation.slides
@@ -52,6 +59,14 @@ function readSavedProject() {
 export default function App() {
   const [presentation, setPresentation] = useState(readSavedProject);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMathScanOpen, setIsMathScanOpen] = useState(false);
+  const [mathDraft, setMathDraft] = useState({
+    title: "Решите задачу",
+    latex: "\\frac{2x - 5}{3} = 7",
+    solution: "Умножим обе части уравнения на 3.",
+    answer: "x = 13",
+    image: ""
+  });
 
   const activeSlide = useMemo(() => {
     return presentation.slides[activeIndex] || presentation.slides[0];
@@ -124,6 +139,30 @@ export default function App() {
     setActiveIndex(Math.max(0, index - 1));
   }
 
+  function createMathSlideFromDraft() {
+    const newSlide = {
+      type: "math",
+      title: mathDraft.title || "Решите задачу",
+      subtitle: "",
+      text: "",
+      latex: mathDraft.latex || "",
+      solution: mathDraft.solution || "",
+      answer: mathDraft.answer || "",
+      image: mathDraft.image || "",
+      backgroundImage: ""
+    };
+
+    const slides = [...presentation.slides, newSlide];
+
+    setPresentation({
+      ...presentation,
+      slides
+    });
+
+    setActiveIndex(slides.length - 1);
+    setIsMathScanOpen(false);
+  }
+
   function resetProject() {
     const shouldReset = confirm("Сбросить проект к начальному примеру?");
     if (!shouldReset) return;
@@ -142,12 +181,24 @@ export default function App() {
         presentation={presentation}
         setPresentation={setPresentation}
         addSlide={addSlide}
+        openMathScan={() => setIsMathScanOpen(true)}
         exportPptx={handleExportPptx}
         copyGenially={() => copyGeniallyHtml(presentation)}
+        openGeniallyCode={() => openGeniallyCodeWindow(presentation)}
         downloadGenially={() => downloadGeniallyHtml(presentation)}
         setFileAsDataUrl={setFileAsDataUrl}
         resetProject={resetProject}
       />
+
+      {isMathScanOpen && (
+        <MathScanPanel
+          draft={mathDraft}
+          setDraft={setMathDraft}
+          setFileAsDataUrl={setFileAsDataUrl}
+          createMathSlide={createMathSlideFromDraft}
+          closePanel={() => setIsMathScanOpen(false)}
+        />
+      )}
 
       {presentation.backgroundMusic && (
         <div className="musicPanel">

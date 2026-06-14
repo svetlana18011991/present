@@ -439,3 +439,167 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.specialButton {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.mathScanPanel {
+  margin: 18px 22px 0;
+  padding: 22px;
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.1);
+}
+
+.mathScanHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 18px;
+}
+
+.mathScanHeader h2 {
+  margin: 4px 0 0;
+}
+
+.mathScanGrid {
+  display: grid;
+  grid-template-columns: 0.9fr 1fr 0.9fr;
+  gap: 18px;
+}
+
+.scanBox,
+.scanFields,
+.formulaPreviewBox {
+  min-width: 0;
+}
+
+.bigUpload {
+  width: 100%;
+  min-height: 54px;
+  margin-bottom: 12px;
+}
+
+.emptyScan {
+  min-height: 230px;
+  display: grid;
+  place-content: center;
+  border: 2px dashed #cbd5e1;
+  border-radius: 18px;
+  color: #64748b;
+  text-align: center;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.scanPreviewImage {
+  display: block;
+  width: 100%;
+  max-height: 310px;
+  object-fit: contain;
+  border-radius: 18px;
+  background: #f8fafc;
+  margin-bottom: 12px;
+}
+
+.latexTextarea {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.quickLatex {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 10px;
+}
+
+.wideButton {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.formulaCard {
+  min-height: 160px;
+  display: grid;
+  place-content: center;
+  border-radius: 24px;
+  background: #f8fafc;
+  padding: 24px;
+  overflow: auto;
+}
+
+.mathFormula {
+  font-size: 28px;
+}
+
+.blockFormula {
+  display: block;
+  text-align: center;
+  font-size: clamp(28px, 3vw, 52px);
+}
+
+.formulaPlaceholder {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.helperText {
+  margin: 14px 0 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.mathSlide {
+  height: 100%;
+  padding: 6% 7%;
+}
+
+.mathSlide h2 {
+  margin: 0 0 18px;
+  font-size: clamp(26px, 3.5vw, 50px);
+}
+
+.mathTaskImage {
+  display: block;
+  max-width: 38%;
+  max-height: 26vh;
+  object-fit: contain;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+.mathFormulaBox {
+  border-radius: 26px;
+  padding: 24px;
+  background: rgba(255,255,255,.86);
+  overflow: auto;
+}
+
+.solutionBox {
+  margin-top: 18px;
+  border-radius: 20px;
+  padding: 16px 18px;
+  background: rgba(255,255,255,.76);
+  font-size: clamp(15px, 1.5vw, 22px);
+}
+
+.solutionBox p {
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+}
+
+.answerBox {
+  margin-top: 12px;
+  font-size: clamp(18px, 2vw, 28px);
+  font-weight: 900;
+}
+
+@media (max-width: 1100px) {
+  .mathScanGrid {
+    grid-template-columns: 1fr;
+  }
+}

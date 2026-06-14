@@ -1,4 +1,5 @@
 import { themes } from "../data/templates";
+import MathFormula from "./MathFormula";
 
 export default function SlidePreview({ slide, presentation, activeIndex }) {
   const theme = themes[presentation.theme] || themes.classic;
@@ -54,6 +55,34 @@ export default function SlidePreview({ slide, presentation, activeIndex }) {
               <img className="previewImage" src={slide.image} alt="" />
             )}
           </div>
+        </div>
+      )}
+
+
+      {slide.type === "math" && (
+        <div className="mathSlide">
+          <h2>{slide.title || "Задача"}</h2>
+
+          {slide.image && (
+            <img className="mathTaskImage" src={slide.image} alt="Задача" />
+          )}
+
+          <div className="mathFormulaBox">
+            <MathFormula latex={slide.latex || slide.text || ""} />
+          </div>
+
+          {slide.solution && (
+            <div className="solutionBox">
+              <strong>Решение / подсказка:</strong>
+              <p>{slide.solution}</p>
+            </div>
+          )}
+
+          {slide.answer && (
+            <div className="answerBox">
+              <strong>Ответ:</strong> {slide.answer}
+            </div>
+          )}
         </div>
       )}
 
