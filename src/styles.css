@@ -603,3 +603,22 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.mathModalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.64);
+  overflow: auto;
+}
+
+.modalPanel {
+  width: min(1320px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  margin: 0;
+  border: 3px solid #7c3aed;
+}

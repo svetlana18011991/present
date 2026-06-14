@@ -80,6 +80,13 @@ export default function App() {
     }
   }, [presentation]);
 
+  useEffect(() => {
+    document.body.style.overflow = isMathScanOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMathScanOpen]);
+
   function setFileAsDataUrl(event, callback) {
     const file = event.target.files?.[0];
     if (!file) return;
