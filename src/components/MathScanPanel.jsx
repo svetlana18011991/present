@@ -5,7 +5,11 @@ export default function MathScanPanel({
   setDraft,
   setFileAsDataUrl,
   createMathSlide,
-  closePanel
+  closePanel,
+  recognizeMath,
+  isRecognizing,
+  ocrSettings,
+  setOcrSettings
 }) {
   return (
     <div className="mathModalOverlay">
@@ -18,6 +22,35 @@ export default function MathScanPanel({
           <button className="button danger" onClick={closePanel}>
             Закрыть
           </button>
+        </div>
+
+        <div className="ocrSettingsBox">
+          <div>
+            <span className="eyebrow">Mathpix OCR</span>
+            <p>
+              Введите ключи Mathpix для теста. Они сохраняются только в вашем браузере.
+              Для публичной версии лучше подключить backend, чтобы не показывать ключи пользователям.
+            </p>
+          </div>
+
+          <input
+            className="input"
+            value={ocrSettings.appId}
+            onChange={(event) =>
+              setOcrSettings({ ...ocrSettings, appId: event.target.value })
+            }
+            placeholder="Mathpix app_id"
+          />
+
+          <input
+            className="input"
+            type="password"
+            value={ocrSettings.appKey}
+            onChange={(event) =>
+              setOcrSettings({ ...ocrSettings, appKey: event.target.value })
+            }
+            placeholder="Mathpix app_key"
+          />
         </div>
 
         <div className="mathScanGrid">
@@ -45,14 +78,18 @@ export default function MathScanPanel({
 
             <button
               className="button secondary wideButton"
-              onClick={() =>
-                alert(
-                  "Автораспознавание подключим следующим шагом через OCR/API. Сейчас можно вставить LaTeX вручную или после распознавания в другом сервисе."
-                )
-              }
+              onClick={recognizeMath}
+              disabled={isRecognizing}
             >
-              Распознать автоматически
+              {isRecognizing ? "Распознаю..." : "Распознать автоматически"}
             </button>
+
+            {draft.ocrRawText && (
+              <details className="ocrDetails">
+                <summary>Что распознал OCR</summary>
+                <pre>{draft.ocrRawText}</pre>
+              </details>
+            )}
           </div>
 
           <div className="scanFields">
@@ -133,10 +170,15 @@ export default function MathScanPanel({
               <MathFormula latex={draft.latex} />
             </div>
 
+            {draft.ocrInfo && (
+              <div className="ocrResultInfo">
+                <strong>OCR:</strong> {draft.ocrInfo}
+              </div>
+            )}
+
             <p className="helperText">
-              Сейчас это полуавтоматический прототип: учитель загружает картинку,
-              вставляет или правит LaTeX, а конструктор сам оформляет слайд.
-              Следующий шаг — подключить реальное OCR-распознавание.
+              После распознавания проверьте формулу. OCR может ошибиться в знаках,
+              степенях, дробях или переменных, особенно если фото размытое.
             </p>
           </div>
         </div>

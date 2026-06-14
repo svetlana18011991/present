@@ -6,8 +6,10 @@ import MathScanPanel from "./components/MathScanPanel";
 import { defaultPresentation } from "./data/templates";
 import { exportToPptx } from "./utils/exportPptx";
 import { copyGeniallyHtml, downloadGeniallyHtml, openGeniallyCodeWindow } from "./utils/exportHtml";
+import { recognizeWithMathpix } from "./utils/mathpixOcr";
 
 const STORAGE_KEY = "presentation-builder-project-v2";
+const OCR_STORAGE_KEY = "presentation-builder-mathpix-settings";
 
 function createEmptySlide() {
   return {
@@ -42,6 +44,20 @@ function normalizeProject(project) {
   };
 }
 
+function readOcrSettings() {
+  try {
+    const saved = localStorage.getItem(OCR_STORAGE_KEY);
+    if (!saved) return { appId: "", appKey: "" };
+    const parsed = JSON.parse(saved);
+    return {
+      appId: parsed.appId || "",
+      appKey: parsed.appKey || ""
+    };
+  } catch {
+    return { appId: "", appKey: "" };
+  }
+}
+
 function readSavedProject() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -65,8 +81,12 @@ export default function App() {
     latex: "\\frac{2x - 5}{3} = 7",
     solution: "Умножим обе части уравнения на 3.",
     answer: "x = 13",
-    image: ""
+    image: "",
+    ocrRawText: "",
+    ocrInfo: ""
   });
+  const [ocrSettings, setOcrSettings] = useState(readOcrSettings);
+  const [isRecognizing, setIsRecognizing] = useState(false);
 
   const activeSlide = useMemo(() => {
     return presentation.slides[activeIndex] || presentation.slides[0];
@@ -79,6 +99,10 @@ export default function App() {
       alert("Проект стал слишком большим для сохранения в браузере. Попробуйте использовать картинки/музыку меньшего размера.");
     }
   }, [presentation]);
+
+  useEffect(() => {
+    localStorage.setItem(OCR_STORAGE_KEY, JSON.stringify(ocrSettings));
+  }, [ocrSettings]);
 
   useEffect(() => {
     document.body.style.overflow = isMathScanOpen ? "hidden" : "";
@@ -146,6 +170,34 @@ export default function App() {
     setActiveIndex(Math.max(0, index - 1));
   }
 
+  async function recognizeMathFromImage() {
+    setIsRecognizing(true);
+
+    try {
+      const result = await recognizeWithMathpix({
+        imageDataUrl: mathDraft.image,
+        appId: ocrSettings.appId.trim(),
+        appKey: ocrSettings.appKey.trim()
+      });
+
+      const confidenceText =
+        typeof result.confidence === "number"
+          ? `уверенность ${Math.round(result.confidence * 100)}%`
+          : "распознавание выполнено";
+
+      setMathDraft({
+        ...mathDraft,
+        latex: result.latex,
+        ocrRawText: result.rawText || result.latex,
+        ocrInfo: confidenceText
+      });
+    } catch (error) {
+      alert(error.message || "Не получилось распознать задачу.");
+    } finally {
+      setIsRecognizing(false);
+    }
+  }
+
   function createMathSlideFromDraft() {
     const newSlide = {
       type: "math",
@@ -204,6 +256,10 @@ export default function App() {
           setFileAsDataUrl={setFileAsDataUrl}
           createMathSlide={createMathSlideFromDraft}
           closePanel={() => setIsMathScanOpen(false)}
+          recognizeMath={recognizeMathFromImage}
+          isRecognizing={isRecognizing}
+          ocrSettings={ocrSettings}
+          setOcrSettings={setOcrSettings}
         />
       )}
 
