@@ -681,3 +681,42 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.freeOcrInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #ecfeff;
+  color: #164e63;
+  border: 1px solid #a5f3fc;
+  line-height: 1.45;
+}
+
+.ocrProgress {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 800;
+}
+
+.progressBar {
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.progressBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #7c3aed;
+  transition: width 0.2s ease;
+}

@@ -6,10 +6,9 @@ import MathScanPanel from "./components/MathScanPanel";
 import { defaultPresentation } from "./data/templates";
 import { exportToPptx } from "./utils/exportPptx";
 import { copyGeniallyHtml, downloadGeniallyHtml, openGeniallyCodeWindow } from "./utils/exportHtml";
-import { recognizeWithMathpix } from "./utils/mathpixOcr";
+import { recognizeWithFreeOcr } from "./utils/freeOcr";
 
 const STORAGE_KEY = "presentation-builder-project-v2";
-const OCR_STORAGE_KEY = "presentation-builder-mathpix-settings";
 
 function createEmptySlide() {
   return {
@@ -44,20 +43,6 @@ function normalizeProject(project) {
   };
 }
 
-function readOcrSettings() {
-  try {
-    const saved = localStorage.getItem(OCR_STORAGE_KEY);
-    if (!saved) return { appId: "", appKey: "" };
-    const parsed = JSON.parse(saved);
-    return {
-      appId: parsed.appId || "",
-      appKey: parsed.appKey || ""
-    };
-  } catch {
-    return { appId: "", appKey: "" };
-  }
-}
-
 function readSavedProject() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -85,8 +70,8 @@ export default function App() {
     ocrRawText: "",
     ocrInfo: ""
   });
-  const [ocrSettings, setOcrSettings] = useState(readOcrSettings);
   const [isRecognizing, setIsRecognizing] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState({ status: "", progress: 0 });
 
   const activeSlide = useMemo(() => {
     return presentation.slides[activeIndex] || presentation.slides[0];
@@ -100,9 +85,6 @@ export default function App() {
     }
   }, [presentation]);
 
-  useEffect(() => {
-    localStorage.setItem(OCR_STORAGE_KEY, JSON.stringify(ocrSettings));
-  }, [ocrSettings]);
 
   useEffect(() => {
     document.body.style.overflow = isMathScanOpen ? "hidden" : "";
@@ -172,17 +154,17 @@ export default function App() {
 
   async function recognizeMathFromImage() {
     setIsRecognizing(true);
+    setOcrProgress({ status: "Подготовка OCR...", progress: 0 });
 
     try {
-      const result = await recognizeWithMathpix({
+      const result = await recognizeWithFreeOcr({
         imageDataUrl: mathDraft.image,
-        appId: ocrSettings.appId.trim(),
-        appKey: ocrSettings.appKey.trim()
+        onProgress: setOcrProgress
       });
 
       const confidenceText =
         typeof result.confidence === "number"
-          ? `уверенность ${Math.round(result.confidence * 100)}%`
+          ? `уверенность ${Math.round(result.confidence)}%`
           : "распознавание выполнено";
 
       setMathDraft({
@@ -195,6 +177,7 @@ export default function App() {
       alert(error.message || "Не получилось распознать задачу.");
     } finally {
       setIsRecognizing(false);
+      setOcrProgress({ status: "", progress: 0 });
     }
   }
 
@@ -258,8 +241,7 @@ export default function App() {
           closePanel={() => setIsMathScanOpen(false)}
           recognizeMath={recognizeMathFromImage}
           isRecognizing={isRecognizing}
-          ocrSettings={ocrSettings}
-          setOcrSettings={setOcrSettings}
+          ocrProgress={ocrProgress}
         />
       )}
 

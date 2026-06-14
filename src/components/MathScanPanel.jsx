@@ -8,8 +8,7 @@ export default function MathScanPanel({
   closePanel,
   recognizeMath,
   isRecognizing,
-  ocrSettings,
-  setOcrSettings
+  ocrProgress
 }) {
   return (
     <div className="mathModalOverlay">
@@ -17,40 +16,19 @@ export default function MathScanPanel({
         <div className="mathScanHeader">
           <div>
             <span className="eyebrow">Экспериментальная функция</span>
-            <h2>Скан задачи → красивый LaTeX-слайд</h2>
+            <h2>Скан задачи → красивый слайд</h2>
           </div>
           <button className="button danger" onClick={closePanel}>
             Закрыть
           </button>
         </div>
 
-        <div className="ocrSettingsBox">
-          <div>
-            <span className="eyebrow">Mathpix OCR</span>
-            <p>
-              Введите ключи Mathpix для теста. Они сохраняются только в вашем браузере.
-              Для публичной версии лучше подключить backend, чтобы не показывать ключи пользователям.
-            </p>
-          </div>
-
-          <input
-            className="input"
-            value={ocrSettings.appId}
-            onChange={(event) =>
-              setOcrSettings({ ...ocrSettings, appId: event.target.value })
-            }
-            placeholder="Mathpix app_id"
-          />
-
-          <input
-            className="input"
-            type="password"
-            value={ocrSettings.appKey}
-            onChange={(event) =>
-              setOcrSettings({ ...ocrSettings, appKey: event.target.value })
-            }
-            placeholder="Mathpix app_key"
-          />
+        <div className="freeOcrInfo">
+          <strong>Бесплатное распознавание без регистрации.</strong>
+          <span>
+            Работает прямо в браузере. Лучше распознаёт печатный текст и простые формулы.
+            Сложные дроби, степени и корни после распознавания лучше проверить вручную.
+          </span>
         </div>
 
         <div className="mathScanGrid">
@@ -81,11 +59,33 @@ export default function MathScanPanel({
               onClick={recognizeMath}
               disabled={isRecognizing}
             >
-              {isRecognizing ? "Распознаю..." : "Распознать автоматически"}
+              {isRecognizing ? "Распознаю..." : "Распознать бесплатно"}
             </button>
 
+            {isRecognizing && (
+              <div className="ocrProgress">
+                <div>
+                  {ocrProgress.status || "Подготовка OCR..."}
+                  {typeof ocrProgress.progress === "number"
+                    ? ` — ${Math.round(ocrProgress.progress * 100)}%`
+                    : ""}
+                </div>
+                <div className="progressBar">
+                  <span
+                    style={{
+                      width: `${
+                        typeof ocrProgress.progress === "number"
+                          ? Math.round(ocrProgress.progress * 100)
+                          : 12
+                      }%`
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
             {draft.ocrRawText && (
-              <details className="ocrDetails">
+              <details className="ocrDetails" open>
                 <summary>Что распознал OCR</summary>
                 <pre>{draft.ocrRawText}</pre>
               </details>
@@ -102,7 +102,7 @@ export default function MathScanPanel({
               }
             />
 
-            <label className="label">LaTeX задачи</label>
+            <label className="label">Формула / LaTeX</label>
             <textarea
               className="textarea latexTextarea"
               value={draft.latex}
@@ -177,8 +177,8 @@ export default function MathScanPanel({
             )}
 
             <p className="helperText">
-              После распознавания проверьте формулу. OCR может ошибиться в знаках,
-              степенях, дробях или переменных, особенно если фото размытое.
+              Для лучшего результата загружайте чёткое фото, где видна только одна задача.
+              После распознавания проверьте знаки, степени и дроби.
             </p>
           </div>
         </div>

@@ -16,7 +16,8 @@
     "react-dom": "latest",
     "pptxgenjs": "latest",
     "gh-pages": "latest",
-    "katex": "latest"
+    "katex": "latest",
+    "tesseract.js": "latest"
   },
   "devDependencies": {}
 }
