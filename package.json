@@ -1,0 +1,21 @@
+{
+  "name": "presentation-builder",
+  "version": "1.0.0",
+  "private": true,
+  "homepage": "https://svetlana18011991.github.io/present",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "deploy": "gh-pages -d dist",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "pptxgenjs": "latest",
+    "gh-pages": "latest"
+  },
+  "devDependencies": {}
+}
