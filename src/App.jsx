@@ -4,15 +4,34 @@ import SlideEditor from "./components/SlideEditor";
 import SlidePreview from "./components/SlidePreview";
 import { defaultPresentation } from "./data/templates";
 import { exportToPptx } from "./utils/exportPptx";
+import { copyGeniallyHtml, downloadGeniallyHtml } from "./utils/exportHtml";
 
-const STORAGE_KEY = "presentation-builder-project";
+const STORAGE_KEY = "presentation-builder-project-v2";
 
 function createEmptySlide() {
   return {
     type: "content",
     title: "Новый слайд",
     subtitle: "",
-    text: "Добавьте текст слайда."
+    text: "Добавьте текст слайда.",
+    image: "",
+    backgroundImage: ""
+  };
+}
+
+function normalizeProject(project) {
+  return {
+    ...defaultPresentation,
+    ...project,
+    slides: Array.isArray(project.slides) && project.slides.length
+      ? project.slides.map((slide) => ({
+          image: "",
+          backgroundImage: "",
+          subtitle: "",
+          text: "",
+          ...slide
+        }))
+      : defaultPresentation.slides
   };
 }
 
@@ -20,13 +39,11 @@ function readSavedProject() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return defaultPresentation;
+
     const parsed = JSON.parse(saved);
+    if (!parsed.title || !Array.isArray(parsed.slides)) return defaultPresentation;
 
-    if (!parsed.title || !Array.isArray(parsed.slides)) {
-      return defaultPresentation;
-    }
-
-    return parsed;
+    return normalizeProject(parsed);
   } catch {
     return defaultPresentation;
   }
@@ -41,8 +58,38 @@ export default function App() {
   }, [presentation.slides, activeIndex]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(presentation));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(presentation));
+    } catch {
+      alert("Проект стал слишком большим для сохранения в браузере. Попробуйте использовать картинки/музыку меньшего размера.");
+    }
   }, [presentation]);
+
+  function setFileAsDataUrl(event, callback) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const maxMb = file.type.startsWith("audio/") ? 12 : 5;
+    if (file.size > maxMb * 1024 * 1024) {
+      alert(`Файл слишком большой. Лучше выбрать файл до ${maxMb} МБ.`);
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      callback(reader.result, file);
+      event.target.value = "";
+    };
+
+    reader.onerror = () => {
+      alert("Не получилось прочитать файл.");
+      event.target.value = "";
+    };
+
+    reader.readAsDataURL(file);
+  }
 
   function updateSlide(index, updatedSlide) {
     const slides = presentation.slides.map((slide, slideIndex) =>
@@ -77,45 +124,6 @@ export default function App() {
     setActiveIndex(Math.max(0, index - 1));
   }
 
-  function exportJson() {
-    const data = JSON.stringify(presentation, null, 2);
-    const blob = new Blob([data], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${presentation.title || "presentation"}.json`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-  }
-
-  function importJson(event) {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(reader.result);
-
-        if (!parsed.title || !Array.isArray(parsed.slides)) {
-          alert("Файл не похож на проект презентации.");
-          return;
-        }
-
-        setPresentation(parsed);
-        setActiveIndex(0);
-      } catch {
-        alert("Не получилось прочитать JSON-файл.");
-      }
-    };
-
-    reader.readAsText(file);
-    event.target.value = "";
-  }
-
   function resetProject() {
     const shouldReset = confirm("Сбросить проект к начальному примеру?");
     if (!shouldReset) return;
@@ -135,10 +143,42 @@ export default function App() {
         setPresentation={setPresentation}
         addSlide={addSlide}
         exportPptx={handleExportPptx}
-        exportJson={exportJson}
-        importJson={importJson}
+        copyGenially={() => copyGeniallyHtml(presentation)}
+        downloadGenially={() => downloadGeniallyHtml(presentation)}
+        setFileAsDataUrl={setFileAsDataUrl}
         resetProject={resetProject}
       />
+
+      {presentation.backgroundMusic && (
+        <div className="musicPanel">
+          <span>Музыка: {presentation.backgroundMusicName || "загружена"}</span>
+          <audio src={presentation.backgroundMusic} controls loop />
+          <button
+            className="smallButton"
+            onClick={() =>
+              setPresentation({
+                ...presentation,
+                backgroundMusic: "",
+                backgroundMusicName: ""
+              })
+            }
+          >
+            Убрать музыку
+          </button>
+        </div>
+      )}
+
+      {presentation.backgroundImage && (
+        <div className="notice">
+          Загружен общий фон презентации.
+          <button
+            className="smallButton"
+            onClick={() => setPresentation({ ...presentation, backgroundImage: "" })}
+          >
+            Убрать общий фон
+          </button>
+        </div>
+      )}
 
       <div className="workspace">
         <aside className="sidebar">
@@ -152,6 +192,7 @@ export default function App() {
               onChange={(updatedSlide) => updateSlide(index, updatedSlide)}
               onDelete={() => deleteSlide(index)}
               canDelete={presentation.slides.length > 1}
+              setFileAsDataUrl={setFileAsDataUrl}
             />
           ))}
         </aside>

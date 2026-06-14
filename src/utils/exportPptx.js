@@ -5,7 +5,7 @@ function hexWithoutHash(value) {
   return value.replace("#", "");
 }
 
-function addFooter(slide, index, total, theme) {
+function addFooter(pptx, slide, index, total, theme) {
   slide.addText(`${index + 1} / ${total}`, {
     x: 11.9,
     y: 6.85,
@@ -17,7 +17,7 @@ function addFooter(slide, index, total, theme) {
   });
 }
 
-function addAccentLine(slide, theme) {
+function addAccentLine(pptx, slide, theme) {
   slide.addShape(pptx.ShapeType.rect, {
     x: 0,
     y: 0,
@@ -28,141 +28,196 @@ function addAccentLine(slide, theme) {
   });
 }
 
+function addBackground(slide, item, presentation, theme) {
+  const bg = item.backgroundImage || presentation.backgroundImage;
+
+  if (bg) {
+    slide.addImage({
+      data: bg,
+      x: 0,
+      y: 0,
+      w: 13.333,
+      h: 7.5,
+      sizing: { type: "cover", x: 0, y: 0, w: 13.333, h: 7.5 }
+    });
+    return;
+  }
+
+  slide.background = { color: hexWithoutHash(theme.background) };
+}
+
+function addSlideImage(slide, item) {
+  if (!item.image) return;
+
+  slide.addImage({
+    data: item.image,
+    x: 8.2,
+    y: 1.75,
+    w: 4.1,
+    h: 3.3,
+    sizing: { type: "contain", x: 8.2, y: 1.75, w: 4.1, h: 3.3 }
+  });
+}
+
 export async function exportToPptx(presentation) {
-  const theme = themes[presentation.theme] || themes.classic;
-  const pptx = new pptxgen();
+  try {
+    const theme = themes[presentation.theme] || themes.classic;
+    const pptx = new pptxgen();
 
-  pptx.layout = "LAYOUT_WIDE";
-  pptx.author = "Presentation Builder";
-  pptx.company = "GitHub Project";
-  pptx.subject = presentation.title || "Presentation";
-  pptx.title = presentation.title || "Presentation";
-  pptx.lang = "ru-RU";
-  pptx.theme = {
-    headFontFace: "Aptos Display",
-    bodyFontFace: "Aptos",
-    lang: "ru-RU"
-  };
+    pptx.layout = "LAYOUT_WIDE";
+    pptx.author = "Presentation Builder";
+    pptx.company = "GitHub Project";
+    pptx.subject = presentation.title || "Presentation";
+    pptx.title = presentation.title || "Presentation";
+    pptx.lang = "ru-RU";
+    pptx.theme = {
+      headFontFace: "Aptos Display",
+      bodyFontFace: "Aptos",
+      lang: "ru-RU"
+    };
 
-  presentation.slides.forEach((item, index) => {
-    const slide = pptx.addSlide();
+    presentation.slides.forEach((item, index) => {
+      const slide = pptx.addSlide();
 
-    slide.background = { color: hexWithoutHash(theme.background) };
-    addAccentLine(slide, theme);
+      addBackground(slide, item, presentation, theme);
+      addAccentLine(pptx, slide, theme);
 
-    if (item.type === "title") {
-      slide.addText(item.title || "Без названия", {
-        x: 0.9,
-        y: 1.9,
-        w: 11.6,
-        h: 0.9,
-        fontSize: 38,
-        bold: true,
-        color: hexWithoutHash(theme.text),
-        align: "center",
-        margin: 0.05
-      });
-
-      slide.addText(item.subtitle || "", {
-        x: 1.4,
-        y: 3.0,
-        w: 10.6,
-        h: 0.55,
-        fontSize: 18,
-        color: hexWithoutHash(theme.muted),
-        align: "center",
-        margin: 0.05
-      });
-    }
-
-    if (item.type === "content") {
-      slide.addText(item.title || "Заголовок", {
-        x: 0.75,
-        y: 0.55,
-        w: 11.7,
-        h: 0.55,
-        fontSize: 28,
-        bold: true,
-        color: hexWithoutHash(theme.text),
-        margin: 0.04
-      });
-
-      if (item.subtitle) {
-        slide.addText(item.subtitle, {
-          x: 0.75,
-          y: 1.18,
-          w: 11.7,
-          h: 0.35,
-          fontSize: 14,
-          color: hexWithoutHash(theme.muted),
-          margin: 0.04
+      if (item.type === "title") {
+        slide.addText(item.title || "Без названия", {
+          x: 0.9,
+          y: 1.9,
+          w: 11.6,
+          h: 0.9,
+          fontSize: 38,
+          bold: true,
+          color: hexWithoutHash(theme.text),
+          align: "center",
+          margin: 0.05,
+          breakLine: false,
+          fit: "shrink"
         });
+
+        slide.addText(item.subtitle || "", {
+          x: 1.4,
+          y: 3.0,
+          w: 10.6,
+          h: 0.55,
+          fontSize: 18,
+          color: hexWithoutHash(theme.muted),
+          align: "center",
+          margin: 0.05,
+          breakLine: false,
+          fit: "shrink"
+        });
+
+        addSlideImage(slide, item);
       }
 
-      slide.addShape(pptx.ShapeType.roundRect, {
-        x: 0.75,
-        y: 1.75,
-        w: 11.85,
-        h: 4.65,
-        rectRadius: 0.12,
-        fill: { color: hexWithoutHash(theme.card) },
-        line: { color: hexWithoutHash(theme.card) }
-      });
+      if (item.type === "content") {
+        slide.addText(item.title || "Заголовок", {
+          x: 0.75,
+          y: 0.55,
+          w: 11.7,
+          h: 0.55,
+          fontSize: 28,
+          bold: true,
+          color: hexWithoutHash(theme.text),
+          margin: 0.04,
+          breakLine: false,
+          fit: "shrink"
+        });
 
-      slide.addText(item.text || "", {
-        x: 1.1,
-        y: 2.05,
-        w: 11.1,
-        h: 4.05,
-        fontSize: 18,
-        color: hexWithoutHash(theme.text),
-        valign: "top",
-        fit: "shrink",
-        breakLine: false,
-        margin: 0.06
-      });
-    }
+        if (item.subtitle) {
+          slide.addText(item.subtitle, {
+            x: 0.75,
+            y: 1.18,
+            w: 11.7,
+            h: 0.35,
+            fontSize: 14,
+            color: hexWithoutHash(theme.muted),
+            margin: 0.04,
+            breakLine: false,
+            fit: "shrink"
+          });
+        }
 
-    if (item.type === "quote") {
-      slide.addText("“", {
-        x: 0.75,
-        y: 0.8,
-        w: 1,
-        h: 1,
-        fontSize: 70,
-        bold: true,
-        color: hexWithoutHash(theme.accent),
-        margin: 0
-      });
+        const hasImage = Boolean(item.image);
+        const textWidth = hasImage ? 6.7 : 11.1;
 
-      slide.addText(item.text || "Цитата или важная мысль", {
-        x: 1.35,
-        y: 1.65,
-        w: 10.6,
-        h: 2.4,
-        fontSize: 28,
-        italic: true,
-        color: hexWithoutHash(theme.text),
-        align: "center",
-        valign: "mid",
-        fit: "shrink"
-      });
+        slide.addShape(pptx.ShapeType.roundRect, {
+          x: 0.75,
+          y: 1.75,
+          w: hasImage ? 7.1 : 11.85,
+          h: 4.65,
+          rectRadius: 0.12,
+          fill: { color: hexWithoutHash(theme.card), transparency: item.backgroundImage || presentation.backgroundImage ? 8 : 0 },
+          line: { color: hexWithoutHash(theme.card), transparency: 100 }
+        });
 
-      slide.addText(item.title || "", {
-        x: 1.35,
-        y: 4.35,
-        w: 10.6,
-        h: 0.45,
-        fontSize: 16,
-        color: hexWithoutHash(theme.muted),
-        align: "center"
-      });
-    }
+        slide.addText(item.text || "", {
+          x: 1.1,
+          y: 2.05,
+          w: textWidth,
+          h: 4.05,
+          fontSize: 18,
+          color: hexWithoutHash(theme.text),
+          valign: "top",
+          fit: "shrink",
+          breakLine: false,
+          margin: 0.06
+        });
 
-    addFooter(slide, index, presentation.slides.length, theme);
-  });
+        addSlideImage(slide, item);
+      }
 
-  await pptx.writeFile({
-    fileName: `${presentation.title || "presentation"}.pptx`
-  });
+      if (item.type === "quote") {
+        slide.addText("“", {
+          x: 0.75,
+          y: 0.8,
+          w: 1,
+          h: 1,
+          fontSize: 70,
+          bold: true,
+          color: hexWithoutHash(theme.accent),
+          margin: 0
+        });
+
+        slide.addText(item.text || "Цитата или важная мысль", {
+          x: 1.35,
+          y: 1.65,
+          w: 10.6,
+          h: 2.4,
+          fontSize: 28,
+          italic: true,
+          color: hexWithoutHash(theme.text),
+          align: "center",
+          valign: "mid",
+          fit: "shrink",
+          breakLine: false
+        });
+
+        slide.addText(item.title || "", {
+          x: 1.35,
+          y: 4.35,
+          w: 10.6,
+          h: 0.45,
+          fontSize: 16,
+          color: hexWithoutHash(theme.muted),
+          align: "center",
+          breakLine: false
+        });
+
+        addSlideImage(slide, item);
+      }
+
+      addFooter(pptx, slide, index, presentation.slides.length, theme);
+    });
+
+    await pptx.writeFile({
+      fileName: `${presentation.title || "presentation"}.pptx`
+    });
+  } catch (error) {
+    console.error(error);
+    alert("Не получилось скачать PPTX. Проверьте, не слишком ли большие картинки или музыка. Музыка в PPTX не встраивается, она добавляется в HTML-код для Genially.");
+  }
 }

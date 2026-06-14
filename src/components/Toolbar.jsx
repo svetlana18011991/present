@@ -5,8 +5,9 @@ export default function Toolbar({
   setPresentation,
   addSlide,
   exportPptx,
-  exportJson,
-  importJson,
+  copyGenially,
+  downloadGenially,
+  setFileAsDataUrl,
   resetProject
 }) {
   return (
@@ -45,25 +46,48 @@ export default function Toolbar({
             ))}
           </select>
         </div>
+
+        <label className="uploadControl">
+          <span>Фон всей презентации</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              setFileAsDataUrl(event, (dataUrl) =>
+                setPresentation({ ...presentation, backgroundImage: dataUrl })
+              )
+            }
+          />
+        </label>
+
+        <label className="uploadControl">
+          <span>Фоновая музыка</span>
+          <input
+            type="file"
+            accept="audio/*"
+            onChange={(event) =>
+              setFileAsDataUrl(event, (dataUrl, file) =>
+                setPresentation({
+                  ...presentation,
+                  backgroundMusic: dataUrl,
+                  backgroundMusicName: file.name
+                })
+              )
+            }
+          />
+        </label>
       </div>
 
       <div className="toolbarActions">
         <button className="button secondary" onClick={addSlide}>
           + Слайд
         </button>
-        <button className="button secondary" onClick={exportJson}>
-          Экспорт JSON
+        <button className="button secondary" onClick={copyGenially}>
+          Код для Genially
         </button>
-
-        <label className="button secondary fileButton">
-          Импорт JSON
-          <input
-            type="file"
-            accept="application/json"
-            onChange={importJson}
-          />
-        </label>
-
+        <button className="button secondary" onClick={downloadGenially}>
+          Скачать HTML
+        </button>
         <button className="button danger" onClick={resetProject}>
           Сбросить
         </button>

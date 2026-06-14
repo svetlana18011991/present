@@ -38,6 +38,7 @@ textarea {
 
 .toolbarMain {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   align-items: end;
 }
@@ -86,7 +87,8 @@ textarea {
 }
 
 .button,
-.smallButton {
+.smallButton,
+.uploadControl {
   border: 0;
   border-radius: 12px;
   padding: 10px 14px;
@@ -98,12 +100,14 @@ textarea {
 }
 
 .button:hover,
-.smallButton:hover {
+.smallButton:hover,
+.uploadControl:hover {
   transform: translateY(-1px);
 }
 
 .button:active,
-.smallButton:active {
+.smallButton:active,
+.uploadControl:active {
   transform: translateY(0);
 }
 
@@ -122,13 +126,26 @@ textarea {
   color: #991b1b;
 }
 
-.fileButton {
-  position: relative;
-  overflow: hidden;
+.uploadControl {
+  display: inline-grid;
+  place-content: center;
+  min-height: 42px;
+  background: #edf2f7;
+  color: #0f172a;
+  text-align: center;
 }
 
-.fileButton input {
+.uploadControl span {
+  font-size: 13px;
+}
+
+.uploadControl input {
   display: none;
+}
+
+.compact {
+  width: 100%;
+  padding: 9px 10px;
 }
 
 .workspace {
@@ -165,6 +182,14 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.editorUploads,
+.mediaActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
 }
 
 .smallButton {
@@ -268,6 +293,16 @@ textarea {
   font-size: clamp(14px, 1.4vw, 20px);
 }
 
+.previewGrid {
+  display: grid;
+  gap: 24px;
+  align-items: center;
+}
+
+.previewGrid.withImage {
+  grid-template-columns: 1.15fr 0.85fr;
+}
+
 .textBox {
   min-height: 48%;
   border-radius: 24px;
@@ -279,6 +314,20 @@ textarea {
   white-space: pre-wrap;
   font-size: clamp(18px, 2vw, 30px);
   line-height: 1.45;
+}
+
+.previewImage {
+  display: block;
+  width: 100%;
+  max-height: 48vh;
+  object-fit: contain;
+  border-radius: 22px;
+}
+
+.titleImage,
+.quoteImage {
+  max-width: 45%;
+  margin: 24px auto 0;
 }
 
 .quoteSlide {
@@ -314,7 +363,25 @@ textarea {
   font-weight: 700;
 }
 
-@media (max-width: 1000px) {
+.musicPanel,
+.notice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 14px 22px 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  font-weight: 700;
+}
+
+.musicPanel audio {
+  height: 34px;
+}
+
+@media (max-width: 1100px) {
   .toolbar {
     align-items: stretch;
     flex-direction: column;
@@ -338,7 +405,7 @@ textarea {
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 700px) {
   .workspace {
     padding: 12px;
   }
@@ -356,13 +423,19 @@ textarea {
     border-radius: 18px;
   }
 
-  .toolbarActions {
-    justify-content: stretch;
+  .toolbarActions,
+  .editorUploads,
+  .mediaActions {
+    grid-template-columns: 1fr;
   }
 
   .button,
-  .fileButton {
+  .uploadControl {
     flex: 1;
     text-align: center;
+  }
+
+  .previewGrid.withImage {
+    grid-template-columns: 1fr;
   }
 }

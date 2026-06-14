@@ -5,7 +5,8 @@ export default function SlideEditor({
   onSelect,
   onChange,
   onDelete,
-  canDelete
+  canDelete,
+  setFileAsDataUrl
 }) {
   return (
     <article
@@ -63,6 +64,62 @@ export default function SlideEditor({
         onChange={(event) => onChange({ ...slide, text: event.target.value })}
         placeholder="Основной текст слайда"
       />
+
+      <div className="editorUploads">
+        <label className="uploadControl compact">
+          <span>Картинка на слайд</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              setFileAsDataUrl(event, (dataUrl) =>
+                onChange({ ...slide, image: dataUrl })
+              )
+            }
+          />
+        </label>
+
+        <label className="uploadControl compact">
+          <span>Фон этого слайда</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              setFileAsDataUrl(event, (dataUrl) =>
+                onChange({ ...slide, backgroundImage: dataUrl })
+              )
+            }
+          />
+        </label>
+      </div>
+
+      {(slide.image || slide.backgroundImage) && (
+        <div className="mediaActions">
+          {slide.image && (
+            <button
+              className="smallButton"
+              onClick={(event) => {
+                event.stopPropagation();
+                onChange({ ...slide, image: "" });
+              }}
+            >
+              Убрать картинку
+            </button>
+          )}
+
+          {slide.backgroundImage && (
+            <button
+              className="smallButton"
+              onClick={(event) => {
+                event.stopPropagation();
+                onChange({ ...slide, backgroundImage: "" });
+              }}
+            >
+              Убрать фон
+            </button>
+          )}
+        </div>
+      )}
     </article>
   );
 }

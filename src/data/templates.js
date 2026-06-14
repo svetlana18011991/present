@@ -36,18 +36,25 @@ export const themes = {
 export const defaultPresentation = {
   title: "Моя презентация",
   theme: "classic",
+  backgroundImage: "",
+  backgroundMusic: "",
+  backgroundMusicName: "",
   slides: [
     {
       type: "title",
       title: "Моя презентация",
       subtitle: "Создано в конструкторе презентаций",
-      text: ""
+      text: "",
+      image: "",
+      backgroundImage: ""
     },
     {
       type: "content",
       title: "Первый слайд",
       subtitle: "",
-      text: "Здесь можно написать основные мысли, план урока, тезисы доклада или структуру выступления."
+      text: "Здесь можно написать основные мысли, план урока, тезисы доклада или структуру выступления.",
+      image: "",
+      backgroundImage: ""
     }
   ]
 };
